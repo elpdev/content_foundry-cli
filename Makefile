@@ -8,7 +8,7 @@ build:
 	go build $(LDFLAGS) -o $(BINARY_NAME) .
 
 install: build
-	cp $(BINARY_NAME) $(shell go env GOPATH)/bin/$(BINARY_NAME)
+	install -m 755 $(BINARY_NAME) $(shell brew --prefix content_foundry)/bin/$(BINARY_NAME)
 
 clean:
 	rm -f $(BINARY_NAME)

@@ -74,9 +74,16 @@ var platformsShowCmd = &cobra.Command{
 			{Key: "Created", Value: platform.CreatedAt},
 		}
 		if platform.PromptTemplate != "" {
-			fields = append(fields, output.Field{Key: "Prompt Template", Value: platform.PromptTemplate})
+			v := platform.PromptTemplate
+			if outFormat == "table" && len(v) > 80 {
+				v = v[:80] + "..."
+			}
+			fields = append(fields, output.Field{Key: "Prompt Template", Value: v})
 		}
 		fmt.Print(formatter.FormatItem(fields))
+		if outFormat == "table" && len(platform.PromptTemplate) > 80 {
+			fmt.Printf("\nPrompt Template:\n%s\n", platform.PromptTemplate)
+		}
 		return nil
 	},
 }
@@ -149,9 +156,13 @@ var platformsUpdateCmd = &cobra.Command{
 			v, _ := cmd.Flags().GetString("model")
 			fields["model_id"] = v
 		}
+		if cmd.Flags().Changed("prompt") {
+			v, _ := cmd.Flags().GetString("prompt")
+			fields["prompt_template"] = v
+		}
 
 		if len(fields) == 0 {
-			return fmt.Errorf("no fields to update (use --name, --active, --slug, --model)")
+			return fmt.Errorf("no fields to update (use --name, --active, --slug, --model, --prompt)")
 		}
 
 		client := mustClient()
@@ -435,6 +446,7 @@ func init() {
 	platformsUpdateCmd.Flags().Bool("active", true, "active status")
 	platformsUpdateCmd.Flags().String("slug", "", "new slug")
 	platformsUpdateCmd.Flags().String("model", "", "AI model provider ID (e.g. claude-sonnet-4-5-20241022)")
+	platformsUpdateCmd.Flags().String("prompt", "", "new prompt template")
 
 	platformsCmd.AddCommand(platformsDeleteCmd)
 
