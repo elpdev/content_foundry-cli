@@ -1,2 +1,4 @@
 content_foundry
 content_engine
+.ruby-lsp/
+.claude/
