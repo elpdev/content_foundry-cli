@@ -168,16 +168,25 @@ type Publication struct {
 
 // Persona represents an AI persona.
 type Persona struct {
-	ID           int64  `json:"id"`
-	Name         string `json:"name"`
-	RoleTitle    string `json:"role_title"`
-	Description  string `json:"description"`
-	SystemPrompt string `json:"system_prompt"`
-	AvatarEmoji  string `json:"avatar_emoji"`
-	ModelID      any    `json:"model_id"`
-	Active       bool   `json:"active"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
+	ID           int64     `json:"id"`
+	Name         string    `json:"name"`
+	RoleTitle    string    `json:"role_title"`
+	Description  string    `json:"description"`
+	SystemPrompt string    `json:"system_prompt"`
+	AvatarEmoji  string    `json:"avatar_emoji"`
+	ModelID      any       `json:"model_id"`
+	Model        *LLMModel `json:"model,omitempty"`
+	Active       bool      `json:"active"`
+	CreatedAt    string    `json:"created_at"`
+	UpdatedAt    string    `json:"updated_at"`
+}
+
+// ModelDisplayName returns a human-readable model name for the persona.
+func (p *Persona) ModelDisplayName() string {
+	if p.Model != nil {
+		return p.Model.DisplayName()
+	}
+	return ""
 }
 
 // Chat represents a chat session.

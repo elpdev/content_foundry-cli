@@ -69,6 +69,7 @@ var personasShowCmd = &cobra.Command{
 			{Key: "Role", Value: persona.RoleTitle},
 			{Key: "Description", Value: persona.Description},
 			{Key: "Emoji", Value: persona.AvatarEmoji},
+			{Key: "Model", Value: persona.ModelDisplayName()},
 			{Key: "Active", Value: fmt.Sprintf("%t", persona.Active)},
 			{Key: "System Prompt", Value: prompt},
 			{Key: "Created", Value: persona.CreatedAt},
@@ -151,9 +152,13 @@ var personasUpdateCmd = &cobra.Command{
 			v, _ := cmd.Flags().GetString("description")
 			fields["description"] = v
 		}
+		if cmd.Flags().Changed("model") {
+			v, _ := cmd.Flags().GetString("model")
+			fields["model_id"] = v
+		}
 
 		if len(fields) == 0 {
-			return fmt.Errorf("no fields to update (use --name, --role, --prompt, --description)")
+			return fmt.Errorf("no fields to update (use --name, --role, --prompt, --description, --model)")
 		}
 
 		client := mustClient()
@@ -221,6 +226,7 @@ func init() {
 	personasUpdateCmd.Flags().String("role", "", "new role title")
 	personasUpdateCmd.Flags().String("prompt", "", "new system prompt")
 	personasUpdateCmd.Flags().String("description", "", "new description")
+	personasUpdateCmd.Flags().String("model", "", "AI model provider ID (e.g. claude-sonnet-4-5)")
 
 	personasCmd.AddCommand(personasDeleteCmd)
 }
