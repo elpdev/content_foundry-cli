@@ -28,7 +28,6 @@ archives:
       {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
     files:
       - README.md
-      - LICENSE*
 
 checksum:
   name_template: 'checksums.txt'
@@ -42,14 +41,15 @@ changelog:
       - '^ci:'
       - '^chore:'
 
-homebrew_casks:
+brews:
   - name: content_foundry
-    binaries:
-      - content_foundry
     repository:
       owner: elpdev
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    directory: Casks
+    directory: Formula
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/elpdev/content_foundry-cli"
     description: "Content Foundry CLI - manage your content pipeline from the terminal"
+    test: |
+      assert_match "CONTENT FOUNDRY", shell_output("#{bin}/content_foundry --help")

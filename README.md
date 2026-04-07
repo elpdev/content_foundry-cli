@@ -9,7 +9,7 @@ Built with [Cobra](https://github.com/spf13/cobra) and the [Charm](https://charm
 ### Homebrew
 
 ```sh
-brew tap elpdev/tap ssh://git@100.98.15.106:23231/homebrew-tap.git
+brew tap elpdev/tap
 brew install content_foundry
 ```
 
@@ -276,27 +276,17 @@ make run       # go run
 
 ## Releasing a New Version
 
-After merging your changes to `main`:
+Merges to `main` automatically create the next patch release, publish GitHub release artifacts, and update the Homebrew tap formula.
 
 ```sh
-# 1. Tag the new version
-git tag v0.X.Y
-git push soft-serve v0.X.Y
-
-# 2. Update the Homebrew tap formula
-#    Edit /opt/homebrew/Library/Taps/elpdev/homebrew-tap/Formula/content_foundry.rb
-#    Change the tag: line to the new version, e.g.:
-#      url "ssh://git@100.98.15.106:23231/content_foundry-cli.git", tag: "v0.X.Y"
-
-# 3. Commit and push the tap
-cd /opt/homebrew/Library/Taps/elpdev/homebrew-tap
-git add Formula/content_foundry.rb
-git commit -m "Bump content_foundry to v0.X.Y"
-git push
-
-# 4. Upgrade locally (or tell users to run this)
+# Upgrade locally after a release lands
 brew upgrade content_foundry
 ```
+
+Repository setup requirements:
+
+- Add the `HOMEBREW_TAP_TOKEN` Actions secret with write access to `elpdev/homebrew-tap`
+- Keep the tap formula in `elpdev/homebrew-tap/Formula/content_foundry.rb`
 
 ## License
 
