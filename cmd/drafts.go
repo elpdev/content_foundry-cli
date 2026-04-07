@@ -27,12 +27,13 @@ var draftsListCmd = &cobra.Command{
 		status, _ := cmd.Flags().GetString("status")
 		platformID, _ := cmd.Flags().GetString("platform-id")
 		assignedTo, _ := cmd.Flags().GetString("assigned-to")
+		search, _ := cmd.Flags().GetString("search")
 		page, _ := cmd.Flags().GetInt("page")
 		perPage, _ := cmd.Flags().GetInt("per-page")
 
-		resp, err := svc.List(cmdContext(), api.DraftListParams{
+		resp, err := svc.List(cmdContext(), &api.DraftListParams{
 			Status: status, PlatformID: platformID, AssignedToID: assignedTo,
-			Page: page, PerPage: perPage,
+			Search: search, Page: page, PerPage: perPage,
 		})
 		if err != nil {
 			return err
@@ -75,8 +76,8 @@ var draftsShowCmd = &cobra.Command{
 
 		d := detail.Draft
 		content := d.Content
-		if len(content) > 200 {
-			content = content[:200] + "..."
+		if outFormat == "table" {
+			content = truncate(content, 200)
 		}
 
 		fields := []output.Field{
@@ -101,8 +102,8 @@ var draftsShowCmd = &cobra.Command{
 			rows := make([][]string, len(detail.Comments))
 			for i, c := range detail.Comments {
 				body := c.Body
-				if len(body) > 80 {
-					body = body[:80] + "..."
+				if outFormat == "table" {
+					body = truncate(body, 80)
 				}
 				rows[i] = []string{
 					fmt.Sprintf("%d", c.ID),
@@ -568,6 +569,7 @@ func init() {
 	draftsListCmd.Flags().String("status", "", "filter by status (pending_review, approved, rejected, scheduled, published)")
 	draftsListCmd.Flags().String("platform-id", "", "filter by platform ID")
 	draftsListCmd.Flags().String("assigned-to", "", "filter by assigned user ID")
+	draftsListCmd.Flags().String("search", "", "search draft content")
 	var page, perPage int
 	addPaginationFlags(draftsListCmd, &page, &perPage)
 

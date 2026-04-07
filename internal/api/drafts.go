@@ -21,11 +21,12 @@ type DraftListParams struct {
 	Status       string
 	PlatformID   string
 	AssignedToID string
+	Search       string
 	Page         int
 	PerPage      int
 }
 
-func (p DraftListParams) Values() url.Values {
+func (p *DraftListParams) Values() url.Values {
 	v := url.Values{}
 	if p.Status != "" {
 		v.Set("status", p.Status)
@@ -36,6 +37,9 @@ func (p DraftListParams) Values() url.Values {
 	if p.AssignedToID != "" {
 		v.Set("assigned_to_id", p.AssignedToID)
 	}
+	if p.Search != "" {
+		v.Set("search", p.Search)
+	}
 	if p.Page > 0 {
 		v.Set("page", fmt.Sprintf("%d", p.Page))
 	}
@@ -45,7 +49,7 @@ func (p DraftListParams) Values() url.Values {
 	return v
 }
 
-func (s *DraftService) List(ctx context.Context, p DraftListParams) (*PaginatedResponse[models.Draft], error) {
+func (s *DraftService) List(ctx context.Context, p *DraftListParams) (*PaginatedResponse[models.Draft], error) {
 	return FetchPage[models.Draft](ctx, s.client, "/api/v1/drafts", p.Values(), "drafts")
 }
 
