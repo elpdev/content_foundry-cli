@@ -111,7 +111,7 @@ func renderITerm2(data []byte, width int) string {
 
 	var b strings.Builder
 	b.WriteString("\033]1337;File=inline=1")
-	b.WriteString(fmt.Sprintf(";width=%d", width))
+	fmt.Fprintf(&b, ";width=%d", width)
 	b.WriteString(";preserveAspectRatio=1")
 	b.WriteString(":")
 	b.WriteString(encoded)
@@ -145,19 +145,20 @@ func renderKitty(data []byte, width int) string {
 		b.WriteString("\033_G")
 		if isFirst {
 			// First chunk: include action and format
-			b.WriteString(fmt.Sprintf("a=T,f=100,c=%d", width))
+			fmt.Fprintf(&b, "a=T,f=100,c=%d", width)
 		}
 
-		if isFirst && isLast {
+		switch {
+		case isFirst && isLast:
 			// Single chunk, no more data
 			b.WriteString(";")
-		} else if isFirst {
+		case isFirst:
 			// First of multiple chunks
 			b.WriteString(",m=1;")
-		} else if isLast {
+		case isLast:
 			// Last chunk
 			b.WriteString("m=0;")
-		} else {
+		default:
 			// Middle chunk
 			b.WriteString("m=1;")
 		}

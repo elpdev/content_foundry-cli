@@ -131,11 +131,13 @@ var invitationsDeleteCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title("Delete this invitation?").
 			Description("The invite link will no longer work.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")

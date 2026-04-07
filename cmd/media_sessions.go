@@ -155,11 +155,13 @@ var mediaDeleteCmd = &cobra.Command{
 		}
 
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete media session %d?", id)).
 			Description("This will delete all turns and generated media.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")

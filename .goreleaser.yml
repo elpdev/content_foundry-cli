@@ -1,0 +1,55 @@
+version: 2
+
+project_name: content_foundry
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+
+builds:
+  - main: .
+    binary: content_foundry
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/leo/content-foundry-cli/cmd.Version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+
+homebrew_casks:
+  - name: content_foundry
+    binaries:
+      - content_foundry
+    repository:
+      owner: elpdev
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    homepage: "https://github.com/elpdev/content_foundry-cli"
+    description: "Content Foundry CLI - manage your content pipeline from the terminal"

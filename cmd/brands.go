@@ -201,11 +201,13 @@ var brandsDeleteCmd = &cobra.Command{
 		}
 
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete brand %d?", id)).
 			Description("This cannot be undone.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")

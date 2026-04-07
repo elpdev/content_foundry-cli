@@ -1,7 +1,6 @@
 package output
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -102,5 +101,5 @@ func (f *TableFormatter) FormatItem(fields []Field) string {
 }
 
 func (f *TableFormatter) FormatRaw(data []byte) string {
-	return fmt.Sprintf("%s", data)
+	return string(data)
 }

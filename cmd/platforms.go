@@ -194,11 +194,13 @@ var platformsDeleteCmd = &cobra.Command{
 		}
 
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete platform %d?", id)).
 			Description("This cannot be undone.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")
@@ -404,11 +406,13 @@ var platformsLabelsDeleteCmd = &cobra.Command{
 		}
 
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete label %d?", labelID)).
 			Description("This cannot be undone.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")

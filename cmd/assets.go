@@ -127,11 +127,13 @@ var assetsDeleteCmd = &cobra.Command{
 		}
 
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete asset %d?", id)).
 			Description("This cannot be undone.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")

@@ -152,11 +152,13 @@ var chatsDeleteCmd = &cobra.Command{
 		}
 
 		var confirm bool
-		huh.NewConfirm().
+		if err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete chat %d?", id)).
 			Description("This will delete the chat and all messages.").
 			Value(&confirm).
-			Run()
+			Run(); err != nil {
+			return err
+		}
 
 		if !confirm {
 			fmt.Println("Cancelled.")

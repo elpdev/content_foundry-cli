@@ -84,8 +84,8 @@ func (s *AccountService) GetMember(ctx context.Context, id int64) (*models.Accou
 		return nil, nil, err
 	}
 	var wrapper struct {
-		AccountUser    models.AccountUser `json:"account_user"`
-		GrantedBrandIDs []int64           `json:"granted_brand_ids"`
+		AccountUser     models.AccountUser `json:"account_user"`
+		GrantedBrandIDs []int64            `json:"granted_brand_ids"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil {
 		return nil, nil, fmt.Errorf("parsing account user: %w", err)

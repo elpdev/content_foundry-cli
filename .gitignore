@@ -1,4 +1,5 @@
 content_foundry
 content_engine
+dist/
 .ruby-lsp/
 .claude/
