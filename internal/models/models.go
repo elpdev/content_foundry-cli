@@ -198,6 +198,7 @@ type Chat struct {
 	SubjectType string `json:"subject_type"`
 	SubjectID   *int64 `json:"subject_id"`
 	ModelID     any    `json:"model_id"`
+	Title       string `json:"title"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }

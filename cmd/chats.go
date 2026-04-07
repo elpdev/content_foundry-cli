@@ -33,22 +33,19 @@ var chatsListCmd = &cobra.Command{
 			return err
 		}
 
-		headers := []string{"ID", "Persona", "Subject", "Model", "Created"}
+		headers := []string{"ID", "Title", "Persona", "Model", "Created"}
 		rows := make([][]string, len(resp.Items))
 		for i, c := range resp.Items {
+			title := c.Title
+			if title == "" {
+				title = "Untitled"
+			}
 			personaStr := "-"
 			if c.PersonaID != nil {
 				personaStr = fmt.Sprintf("%d", *c.PersonaID)
 			}
-			subject := "-"
-			if c.SubjectType != "" {
-				subject = c.SubjectType
-				if c.SubjectID != nil {
-					subject += fmt.Sprintf(" #%d", *c.SubjectID)
-				}
-			}
 			rows[i] = []string{
-				fmt.Sprintf("%d", c.ID), personaStr, subject,
+				fmt.Sprintf("%d", c.ID), title, personaStr,
 				fmt.Sprintf("%v", c.ModelID), c.CreatedAt,
 			}
 		}
@@ -78,6 +75,7 @@ var chatsShowCmd = &cobra.Command{
 		c := detail.Chat
 		fields := []output.Field{
 			{Key: "ID", Value: fmt.Sprintf("%d", c.ID)},
+			{Key: "Title", Value: c.Title},
 			{Key: "Model", Value: fmt.Sprintf("%v", c.ModelID)},
 			{Key: "Created", Value: c.CreatedAt},
 		}
@@ -134,6 +132,7 @@ var chatsCreateCmd = &cobra.Command{
 
 		fields := []output.Field{
 			{Key: "ID", Value: fmt.Sprintf("%d", chat.ID)},
+			{Key: "Title", Value: chat.Title},
 			{Key: "Created", Value: chat.CreatedAt},
 		}
 		fmt.Print(formatter.FormatItem(fields))
