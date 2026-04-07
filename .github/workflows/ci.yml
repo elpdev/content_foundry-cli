@@ -26,9 +26,7 @@ jobs:
         run: go mod verify
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v2.11
+        uses: golangci/golangci-lint-action@v7
 
       - name: Build
         run: go build -v ./...
