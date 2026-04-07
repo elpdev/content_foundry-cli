@@ -79,6 +79,25 @@ type ContentItemDraft struct {
 }
 
 // Platform represents a publishing platform.
+// LLMModel represents an AI model available for content generation.
+type LLMModel struct {
+	ID              int64  `json:"id"`
+	ModelID         string `json:"model_id"`
+	Name            string `json:"name"`
+	Provider        string `json:"provider"`
+	Family          string `json:"family"`
+	ContextWindow   int64  `json:"context_window"`
+	MaxOutputTokens int64  `json:"max_output_tokens"`
+}
+
+// ModelName returns a display string for the model, falling back to model_id.
+func (m *LLMModel) DisplayName() string {
+	if m.Name != "" {
+		return m.Name
+	}
+	return m.ModelID
+}
+
 type Platform struct {
 	ID             int64          `json:"id"`
 	Name           string         `json:"name"`
@@ -87,9 +106,18 @@ type Platform struct {
 	Active         bool           `json:"active"`
 	PromptTemplate string         `json:"prompt_template"`
 	ModelID        any            `json:"model_id"`
+	Model          *LLMModel      `json:"model,omitempty"`
 	Settings       map[string]any `json:"settings"`
 	CreatedAt      string         `json:"created_at"`
 	UpdatedAt      string         `json:"updated_at"`
+}
+
+// ModelDisplayName returns a human-readable model name for the platform.
+func (p *Platform) ModelDisplayName() string {
+	if p.Model != nil {
+		return p.Model.DisplayName()
+	}
+	return ""
 }
 
 // Draft represents a content draft.

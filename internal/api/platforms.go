@@ -55,7 +55,7 @@ func (s *PlatformService) Get(ctx context.Context, id int64) (*models.Platform, 
 	return &wrapper.Platform, nil
 }
 
-func (s *PlatformService) Create(ctx context.Context, name, platformType, slug string, active bool, promptTemplate string) (*models.Platform, error) {
+func (s *PlatformService) Create(ctx context.Context, name, platformType, slug string, active bool, promptTemplate, model string) (*models.Platform, error) {
 	fields := map[string]any{
 		"name":   name,
 		"type":   platformType,
@@ -66,6 +66,9 @@ func (s *PlatformService) Create(ctx context.Context, name, platformType, slug s
 	}
 	if promptTemplate != "" {
 		fields["prompt_template"] = promptTemplate
+	}
+	if model != "" {
+		fields["model_id"] = model
 	}
 	payload := map[string]any{"platform": fields}
 	body, _, err := s.client.Post(ctx, "/api/v1/platforms", payload)

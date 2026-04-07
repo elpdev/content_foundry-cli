@@ -33,12 +33,12 @@ var platformsListCmd = &cobra.Command{
 			return err
 		}
 
-		headers := []string{"ID", "Name", "Type", "Slug", "Active"}
+		headers := []string{"ID", "Name", "Type", "Slug", "Active", "Model"}
 		rows := make([][]string, len(resp.Items))
 		for i, p := range resp.Items {
 			rows[i] = []string{
 				fmt.Sprintf("%d", p.ID), p.Name, p.Type, p.Slug,
-				fmt.Sprintf("%t", p.Active),
+				fmt.Sprintf("%t", p.Active), p.ModelDisplayName(),
 			}
 		}
 
@@ -70,6 +70,7 @@ var platformsShowCmd = &cobra.Command{
 			{Key: "Type", Value: platform.Type},
 			{Key: "Slug", Value: platform.Slug},
 			{Key: "Active", Value: fmt.Sprintf("%t", platform.Active)},
+			{Key: "Model", Value: platform.ModelDisplayName()},
 			{Key: "Created", Value: platform.CreatedAt},
 		}
 		if platform.PromptTemplate != "" {
@@ -101,9 +102,11 @@ var platformsCreateCmd = &cobra.Command{
 			}
 		}
 
+		model, _ := cmd.Flags().GetString("model")
+
 		client := mustClient()
 		svc := api.NewPlatformService(client)
-		platform, err := svc.Create(cmdContext(), name, platformType, slug, true, "")
+		platform, err := svc.Create(cmdContext(), name, platformType, slug, true, "", model)
 		if err != nil {
 			return err
 		}
@@ -142,9 +145,13 @@ var platformsUpdateCmd = &cobra.Command{
 			v, _ := cmd.Flags().GetString("slug")
 			fields["slug"] = v
 		}
+		if cmd.Flags().Changed("model") {
+			v, _ := cmd.Flags().GetString("model")
+			fields["model_id"] = v
+		}
 
 		if len(fields) == 0 {
-			return fmt.Errorf("no fields to update (use --name, --active, --slug)")
+			return fmt.Errorf("no fields to update (use --name, --active, --slug, --model)")
 		}
 
 		client := mustClient()
@@ -158,6 +165,7 @@ var platformsUpdateCmd = &cobra.Command{
 			{Key: "ID", Value: fmt.Sprintf("%d", platform.ID)},
 			{Key: "Name", Value: platform.Name},
 			{Key: "Active", Value: fmt.Sprintf("%t", platform.Active)},
+			{Key: "Model", Value: platform.ModelDisplayName()},
 		}
 		fmt.Print(formatter.FormatItem(out))
 		return nil
@@ -420,11 +428,13 @@ func init() {
 	platformsCreateCmd.Flags().String("name", "", "platform name")
 	platformsCreateCmd.Flags().String("type", "", "platform type (e.g. Platforms::Twitter)")
 	platformsCreateCmd.Flags().String("slug", "", "platform slug")
+	platformsCreateCmd.Flags().String("model", "", "AI model provider ID (e.g. claude-sonnet-4-5-20241022)")
 
 	platformsCmd.AddCommand(platformsUpdateCmd)
 	platformsUpdateCmd.Flags().String("name", "", "new name")
 	platformsUpdateCmd.Flags().Bool("active", true, "active status")
 	platformsUpdateCmd.Flags().String("slug", "", "new slug")
+	platformsUpdateCmd.Flags().String("model", "", "AI model provider ID (e.g. claude-sonnet-4-5-20241022)")
 
 	platformsCmd.AddCommand(platformsDeleteCmd)
 
