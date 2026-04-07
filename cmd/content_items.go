@@ -23,11 +23,12 @@ var contentItemsListCmd = &cobra.Command{
 		svc := api.NewContentItemService(client)
 
 		status, _ := cmd.Flags().GetString("status")
+		search, _ := cmd.Flags().GetString("search")
 		page, _ := cmd.Flags().GetInt("page")
 		perPage, _ := cmd.Flags().GetInt("per-page")
 
 		resp, err := svc.List(cmdContext(), api.ContentItemListParams{
-			Status: status, Page: page, PerPage: perPage,
+			Status: status, Search: search, Page: page, PerPage: perPage,
 		})
 		if err != nil {
 			return err
@@ -37,8 +38,8 @@ var contentItemsListCmd = &cobra.Command{
 		rows := make([][]string, len(resp.Items))
 		for i, item := range resp.Items {
 			title := item.Title
-			if len(title) > 60 {
-				title = title[:60] + "..."
+			if outFormat == "table" {
+				title = truncate(title, 60)
 			}
 			rows[i] = []string{
 				fmt.Sprintf("%d", item.ID), title, item.Status,
@@ -148,6 +149,7 @@ func init() {
 
 	contentItemsCmd.AddCommand(contentItemsListCmd)
 	contentItemsListCmd.Flags().String("status", "", "filter by status (pending, processed, ...)")
+	contentItemsListCmd.Flags().String("search", "", "search title or source URL")
 	var page, perPage int
 	addPaginationFlags(contentItemsListCmd, &page, &perPage)
 

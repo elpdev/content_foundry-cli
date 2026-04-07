@@ -166,6 +166,21 @@ type Publication struct {
 	CreatedAt    string `json:"created_at"`
 }
 
+// PublicationListItem represents a publication row with lookup context.
+type PublicationListItem struct {
+	Publication
+	ContentItemTitle string `json:"content_item_title"`
+	PlatformID       int64  `json:"platform_id"`
+}
+
+// PublicationDetail represents the publication lookup chain.
+type PublicationDetail struct {
+	Publication Publication `json:"publication"`
+	Draft       Draft       `json:"draft"`
+	ContentItem ContentItem `json:"content_item"`
+	Source      Source      `json:"source"`
+}
+
 // Persona represents an AI persona.
 type Persona struct {
 	ID           int64     `json:"id"`

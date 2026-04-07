@@ -19,6 +19,7 @@ func NewContentItemService(c *Client) *ContentItemService {
 
 type ContentItemListParams struct {
 	Status  string
+	Search  string
 	Page    int
 	PerPage int
 }
@@ -27,6 +28,9 @@ func (p ContentItemListParams) Values() url.Values {
 	v := url.Values{}
 	if p.Status != "" {
 		v.Set("status", p.Status)
+	}
+	if p.Search != "" {
+		v.Set("search", p.Search)
 	}
 	if p.Page > 0 {
 		v.Set("page", fmt.Sprintf("%d", p.Page))
