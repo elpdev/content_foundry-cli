@@ -47,7 +47,7 @@ func (s *ContentItemService) Get(ctx context.Context, id int64) (*models.Content
 		return nil, nil, err
 	}
 	var wrapper struct {
-		ContentItem models.ContentItem       `json:"content_item"`
+		ContentItem models.ContentItem        `json:"content_item"`
 		Drafts      []models.ContentItemDraft `json:"drafts"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil {

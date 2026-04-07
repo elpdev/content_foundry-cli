@@ -18,7 +18,7 @@ run:
 	go run $(LDFLAGS) .
 
 lint:
-	go vet ./...
+	golangci-lint run
 
 test:
 	go test ./...

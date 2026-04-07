@@ -43,16 +43,16 @@ type Label struct {
 
 // Source represents a content source.
 type Source struct {
-	ID              int64            `json:"id"`
-	Name            string           `json:"name"`
-	Type            string           `json:"type"`
-	Config          map[string]any   `json:"config"`
-	PollingSchedule string           `json:"polling_schedule"`
-	Active          bool             `json:"active"`
-	Prompt          string           `json:"prompt"`
-	LastFetchedAt   string           `json:"last_fetched_at"`
-	CreatedAt       string           `json:"created_at"`
-	UpdatedAt       string           `json:"updated_at"`
+	ID              int64          `json:"id"`
+	Name            string         `json:"name"`
+	Type            string         `json:"type"`
+	Config          map[string]any `json:"config"`
+	PollingSchedule string         `json:"polling_schedule"`
+	Active          bool           `json:"active"`
+	Prompt          string         `json:"prompt"`
+	LastFetchedAt   string         `json:"last_fetched_at"`
+	CreatedAt       string         `json:"created_at"`
+	UpdatedAt       string         `json:"updated_at"`
 }
 
 // ContentItem represents a content item.
@@ -271,19 +271,19 @@ type VideoTurn struct {
 
 // AudioTurn represents an audio generation turn.
 type AudioTurn struct {
-	ID             int64   `json:"id"`
-	MediaSessionID int64   `json:"media_session_id"`
-	Position       int     `json:"position"`
-	UserPrompt     string  `json:"user_prompt"`
-	Status         string  `json:"status"`
-	CaptureSeconds int     `json:"capture_seconds"`
-	BPM            *int    `json:"bpm"`
+	ID             int64    `json:"id"`
+	MediaSessionID int64    `json:"media_session_id"`
+	Position       int      `json:"position"`
+	UserPrompt     string   `json:"user_prompt"`
+	Status         string   `json:"status"`
+	CaptureSeconds int      `json:"capture_seconds"`
+	BPM            *int     `json:"bpm"`
 	Density        *float64 `json:"density"`
 	Brightness     *float64 `json:"brightness"`
-	Scale          string  `json:"scale"`
-	AudioURL       string  `json:"audio_url"`
-	CreatedAt      string  `json:"created_at"`
-	UpdatedAt      string  `json:"updated_at"`
+	Scale          string   `json:"scale"`
+	AudioURL       string   `json:"audio_url"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
 }
 
 // Asset represents an uploaded media asset.

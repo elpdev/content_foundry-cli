@@ -20,12 +20,12 @@ func (f *TextFormatter) FormatList(headers []string, rows [][]string, pagination
 		}
 		for j, cell := range row {
 			if j < len(headers) {
-				sb.WriteString(fmt.Sprintf("%s: %s\n", headers[j], cell))
+				fmt.Fprintf(&sb, "%s: %s\n", headers[j], cell)
 			}
 		}
 	}
 	if pagination != nil {
-		sb.WriteString(fmt.Sprintf("\n%s\n", pagination.Summary()))
+		fmt.Fprintf(&sb, "\n%s\n", pagination.Summary())
 	}
 	return sb.String()
 }
@@ -33,7 +33,7 @@ func (f *TextFormatter) FormatList(headers []string, rows [][]string, pagination
 func (f *TextFormatter) FormatItem(fields []Field) string {
 	var sb strings.Builder
 	for _, field := range fields {
-		sb.WriteString(fmt.Sprintf("%s: %s\n", field.Key, field.Value))
+		fmt.Fprintf(&sb, "%s: %s\n", field.Key, field.Value)
 	}
 	return sb.String()
 }

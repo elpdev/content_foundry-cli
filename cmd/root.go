@@ -111,9 +111,3 @@ func addPaginationFlags(cmd *cobra.Command, page, perPage *int) {
 	cmd.Flags().IntVar(page, "page", 1, "page number")
 	cmd.Flags().IntVar(perPage, "per-page", 20, "items per page (max 100)")
 }
-
-// addSortFlags adds --sort and --direction flags to a command.
-func addSortFlags(cmd *cobra.Command, sort, direction *string) {
-	cmd.Flags().StringVar(sort, "sort", "", "sort column")
-	cmd.Flags().StringVar(direction, "direction", "", "sort direction: asc, desc")
-}

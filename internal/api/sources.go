@@ -111,7 +111,7 @@ func (s *SourceService) Fetch(ctx context.Context, id int64) (*models.Source, st
 	}
 	var wrapper struct {
 		Source  models.Source `json:"source"`
-		Message string       `json:"message"`
+		Message string        `json:"message"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil {
 		return nil, "", fmt.Errorf("parsing fetch response: %w", err)

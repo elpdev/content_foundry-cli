@@ -50,10 +50,10 @@ func (s *DraftService) List(ctx context.Context, p DraftListParams) (*PaginatedR
 }
 
 type DraftDetail struct {
-	Draft            models.Draft              `json:"draft"`
-	Comments         []models.DraftComment     `json:"comments"`
-	RevisionRequests []models.RevisionRequest  `json:"revision_requests"`
-	Publication      *models.Publication       `json:"publication"`
+	Draft            models.Draft             `json:"draft"`
+	Comments         []models.DraftComment    `json:"comments"`
+	RevisionRequests []models.RevisionRequest `json:"revision_requests"`
+	Publication      *models.Publication      `json:"publication"`
 }
 
 func (s *DraftService) Get(ctx context.Context, id int64) (*DraftDetail, error) {
