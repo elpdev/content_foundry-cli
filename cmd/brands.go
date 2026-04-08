@@ -98,6 +98,9 @@ var brandsCreateCmd = &cobra.Command{
 		description, _ := cmd.Flags().GetString("description")
 
 		if name == "" {
+			if !isInteractiveTerminal() {
+				return fmt.Errorf("--name is required")
+			}
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("Brand name").Value(&name),
@@ -200,12 +203,8 @@ var brandsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid brand ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete brand %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete brand %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -312,5 +311,6 @@ func init() {
 	brandsUpdateCmd.Flags().String("dos-and-donts", "", "dos and donts")
 
 	brandsCmd.AddCommand(brandsDeleteCmd)
+	addAutoConfirmFlags(brandsDeleteCmd)
 	brandsCmd.AddCommand(brandsUseCmd)
 }

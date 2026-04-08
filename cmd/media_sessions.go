@@ -105,6 +105,12 @@ var mediaCreateCmd = &cobra.Command{
 		seconds, _ := cmd.Flags().GetInt("seconds")
 
 		if mediaType == "" || prompt == "" {
+			if !isInteractiveTerminal() {
+				if mediaType == "" {
+					return fmt.Errorf("--type is required")
+				}
+				return fmt.Errorf("--prompt is required")
+			}
 			var typeStr string
 			form := huh.NewForm(
 				huh.NewGroup(
@@ -154,12 +160,8 @@ var mediaDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid media session ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete media session %d?", id)).
-			Description("This will delete all turns and generated media.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete media session %d?", id), "This will delete all turns and generated media.")
+		if err != nil {
 			return err
 		}
 
@@ -196,4 +198,5 @@ func init() {
 	mediaCreateCmd.Flags().Int("seconds", 0, "audio capture seconds")
 
 	mediaCmd.AddCommand(mediaDeleteCmd)
+	addAutoConfirmFlags(mediaDeleteCmd)
 }

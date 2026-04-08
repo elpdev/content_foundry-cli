@@ -97,6 +97,9 @@ var ticketsCreateCmd = &cobra.Command{
 		priority, _ := cmd.Flags().GetString("priority")
 
 		if subject == "" {
+			if !isInteractiveTerminal() {
+				return fmt.Errorf("--subject is required")
+			}
 			if category == "" {
 				category = "bug_report"
 			}

@@ -145,6 +145,15 @@ var videosDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid turn ID: %s", args[1])
 		}
 
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete video turn %d?", turnID), "This cannot be undone.")
+		if err != nil {
+			return err
+		}
+		if !confirm {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+
 		client := mustClient()
 		svc := api.NewMediaSessionService(client)
 		if err := svc.DeleteVideoTurn(cmdContext(), sessionID, turnID); err != nil {
@@ -170,4 +179,5 @@ func init() {
 	videosExtendCmd.Flags().String("prompt", "", "extension prompt (optional)")
 
 	videosCmd.AddCommand(videosDeleteCmd)
+	addAutoConfirmFlags(videosDeleteCmd)
 }

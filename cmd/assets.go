@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/huh"
 	"github.com/leo/content-foundry-cli/internal/api"
 	"github.com/leo/content-foundry-cli/internal/media"
 	"github.com/leo/content-foundry-cli/internal/output"
@@ -126,12 +125,8 @@ var assetsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid asset ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete asset %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete asset %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -161,4 +156,5 @@ func init() {
 	assetsCmd.AddCommand(assetsShowCmd)
 	assetsCmd.AddCommand(assetsUploadCmd)
 	assetsCmd.AddCommand(assetsDeleteCmd)
+	addAutoConfirmFlags(assetsDeleteCmd)
 }

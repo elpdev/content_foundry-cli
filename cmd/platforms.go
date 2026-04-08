@@ -96,11 +96,17 @@ var platformsCreateCmd = &cobra.Command{
 		platformType, _ := cmd.Flags().GetString("type")
 		slug, _ := cmd.Flags().GetString("slug")
 
-		if name == "" {
+		if name == "" || platformType == "" {
+			if !isInteractiveTerminal() {
+				if name == "" {
+					return fmt.Errorf("--name is required")
+				}
+				return fmt.Errorf("--type is required")
+			}
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("Platform name").Value(&name),
-					huh.NewInput().Title("Type (e.g. Platforms::Twitter)").Value(&platformType),
+					huh.NewInput().Title("Type (e.g. Platforms::Twitter, Platforms::Blog, Platforms::News)").Value(&platformType),
 					huh.NewInput().Title("Slug (optional)").Value(&slug),
 				),
 			).WithTheme(huh.ThemeCharm())
@@ -193,12 +199,8 @@ var platformsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid platform ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete platform %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete platform %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -405,12 +407,8 @@ var platformsLabelsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid label ID: %s", args[1])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete label %d?", labelID)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete label %d?", labelID), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -441,7 +439,7 @@ func init() {
 
 	platformsCmd.AddCommand(platformsCreateCmd)
 	platformsCreateCmd.Flags().String("name", "", "platform name")
-	platformsCreateCmd.Flags().String("type", "", "platform type (e.g. Platforms::Twitter)")
+	platformsCreateCmd.Flags().String("type", "", "platform type (e.g. Platforms::Twitter, Platforms::Blog, Platforms::News)")
 	platformsCreateCmd.Flags().String("slug", "", "platform slug")
 	platformsCreateCmd.Flags().String("model", "", "AI model provider ID (e.g. claude-sonnet-4-5-20241022)")
 
@@ -453,6 +451,7 @@ func init() {
 	platformsUpdateCmd.Flags().String("prompt", "", "new prompt template")
 
 	platformsCmd.AddCommand(platformsDeleteCmd)
+	addAutoConfirmFlags(platformsDeleteCmd)
 
 	platformsCmd.AddCommand(platformsLabelsCmd)
 	platformsLabelsCmd.AddCommand(platformsLabelsListCmd)
@@ -468,4 +467,5 @@ func init() {
 	platformsLabelsUpdateCmd.Flags().String("slug", "", "new slug")
 	platformsLabelsUpdateCmd.Flags().String("description", "", "new description")
 	platformsLabelsCmd.AddCommand(platformsLabelsDeleteCmd)
+	addAutoConfirmFlags(platformsLabelsDeleteCmd)
 }

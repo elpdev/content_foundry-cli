@@ -89,6 +89,21 @@ func (s *DraftService) Create(ctx context.Context, title, content string, platfo
 	return &wrapper.Draft, nil
 }
 
+func (s *DraftService) Update(ctx context.Context, id int64, fields map[string]any) (*models.Draft, error) {
+	payload := map[string]any{"draft": fields}
+	body, _, err := s.client.Patch(ctx, fmt.Sprintf("/api/v1/drafts/%d", id), payload)
+	if err != nil {
+		return nil, err
+	}
+	var wrapper struct {
+		Draft models.Draft `json:"draft"`
+	}
+	if err := json.Unmarshal(body, &wrapper); err != nil {
+		return nil, fmt.Errorf("parsing draft: %w", err)
+	}
+	return &wrapper.Draft, nil
+}
+
 func (s *DraftService) Delete(ctx context.Context, id int64) error {
 	_, err := s.client.Delete(ctx, fmt.Sprintf("/api/v1/drafts/%d", id))
 	return err

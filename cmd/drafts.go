@@ -142,7 +142,17 @@ var draftsCreateCmd = &cobra.Command{
 		content, _ := cmd.Flags().GetString("content")
 		platformID, _ := cmd.Flags().GetInt64("platform-id")
 
-		if title == "" {
+		if title == "" || content == "" || platformID == 0 {
+			if !isInteractiveTerminal() {
+				switch {
+				case title == "":
+					return fmt.Errorf("--title is required")
+				case content == "":
+					return fmt.Errorf("--content is required")
+				default:
+					return fmt.Errorf("--platform-id is required")
+				}
+			}
 			var pidStr string
 			form := huh.NewForm(
 				huh.NewGroup(
@@ -176,6 +186,41 @@ var draftsCreateCmd = &cobra.Command{
 	},
 }
 
+var draftsEditCmd = &cobra.Command{
+	Use:   "edit <id>",
+	Short: "Edit a draft's title or content",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		id, err := strconv.ParseInt(args[0], 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid draft ID: %s", args[0])
+		}
+
+		fields := map[string]any{}
+		if cmd.Flags().Changed("title") {
+			value, _ := cmd.Flags().GetString("title")
+			fields["title"] = value
+		}
+		if cmd.Flags().Changed("content") {
+			value, _ := cmd.Flags().GetString("content")
+			fields["content"] = value
+		}
+		if len(fields) == 0 {
+			return fmt.Errorf("no fields to update (use --title and/or --content)")
+		}
+
+		client := mustClient()
+		svc := api.NewDraftService(client)
+		draft, err := svc.Update(cmdContext(), id, fields)
+		if err != nil {
+			return err
+		}
+
+		printDraftStatus(draft)
+		return nil
+	},
+}
+
 var draftsDeleteCmd = &cobra.Command{
 	Use:   "delete <id>",
 	Short: "Delete a draft",
@@ -186,12 +231,8 @@ var draftsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid draft ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete draft %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete draft %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -517,6 +558,15 @@ var draftsCommentsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid comment ID: %s", args[1])
 		}
 
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete comment %d?", commentID), "This cannot be undone.")
+		if err != nil {
+			return err
+		}
+		if !confirm {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+
 		client := mustClient()
 		svc := api.NewDraftService(client)
 		if err := svc.DeleteComment(cmdContext(), draftID, commentID); err != nil {
@@ -578,7 +628,12 @@ func init() {
 	draftsCreateCmd.Flags().String("content", "", "draft content")
 	draftsCreateCmd.Flags().Int64("platform-id", 0, "platform ID")
 
+	draftsCmd.AddCommand(draftsEditCmd)
+	draftsEditCmd.Flags().String("title", "", "new draft title")
+	draftsEditCmd.Flags().String("content", "", "new draft content")
+
 	draftsCmd.AddCommand(draftsDeleteCmd)
+	addAutoConfirmFlags(draftsDeleteCmd)
 	draftsCmd.AddCommand(draftsApproveCmd)
 	draftsCmd.AddCommand(draftsRejectCmd)
 
@@ -608,4 +663,5 @@ func init() {
 	draftsCommentsCmd.AddCommand(draftsCommentsAddCmd)
 	draftsCommentsAddCmd.Flags().String("body", "", "comment body")
 	draftsCommentsCmd.AddCommand(draftsCommentsDeleteCmd)
+	addAutoConfirmFlags(draftsCommentsDeleteCmd)
 }

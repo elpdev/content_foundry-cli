@@ -94,7 +94,17 @@ var sourcesCreateCmd = &cobra.Command{
 		configStr, _ := cmd.Flags().GetString("config")
 		prompt, _ := cmd.Flags().GetString("prompt")
 
-		if name == "" {
+		if name == "" || sourceType == "" || configStr == "" {
+			if !isInteractiveTerminal() {
+				switch {
+				case name == "":
+					return fmt.Errorf("--name is required")
+				case sourceType == "":
+					return fmt.Errorf("--type is required")
+				default:
+					return fmt.Errorf("--config is required")
+				}
+			}
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("Source name").Value(&name),
@@ -186,12 +196,8 @@ var sourcesDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid source ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete source %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete source %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -253,5 +259,6 @@ func init() {
 	sourcesUpdateCmd.Flags().String("prompt", "", "new prompt")
 
 	sourcesCmd.AddCommand(sourcesDeleteCmd)
+	addAutoConfirmFlags(sourcesDeleteCmd)
 	sourcesCmd.AddCommand(sourcesFetchCmd)
 }

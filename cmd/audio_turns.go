@@ -63,6 +63,15 @@ var audioDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid turn ID: %s", args[1])
 		}
 
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete audio turn %d?", turnID), "This cannot be undone.")
+		if err != nil {
+			return err
+		}
+		if !confirm {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+
 		client := mustClient()
 		svc := api.NewMediaSessionService(client)
 		if err := svc.DeleteAudioTurn(cmdContext(), sessionID, turnID); err != nil {
@@ -81,4 +90,5 @@ func init() {
 	audioCreateCmd.Flags().Int("seconds", 30, "capture duration in seconds")
 
 	audioCmd.AddCommand(audioDeleteCmd)
+	addAutoConfirmFlags(audioDeleteCmd)
 }

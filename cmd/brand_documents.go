@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/charmbracelet/huh"
 	"github.com/leo/content-foundry-cli/internal/api"
 	"github.com/leo/content-foundry-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -118,12 +117,8 @@ var docsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid document ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete document %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete document %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -170,5 +165,6 @@ func init() {
 	docsCreateCmd.Flags().String("url", "", "URL to ingest")
 
 	docsCmd.AddCommand(docsDeleteCmd)
+	addAutoConfirmFlags(docsDeleteCmd)
 	docsCmd.AddCommand(docsIndexContentCmd)
 }

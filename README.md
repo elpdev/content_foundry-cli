@@ -27,7 +27,7 @@ make install
 
 ```sh
 # 1. Connect to your Content Foundry server
-content_foundry auth login
+content_foundry auth login --base-url "https://contentfoundry.app" --client-id "..." --secret-key "..."
 
 # 2. List your brands
 content_foundry brands list
@@ -42,13 +42,34 @@ content_foundry drafts list --status pending_review
 
 ## Authentication
 
-The CLI uses JWT authentication with API keys. Run `content_foundry auth login` to enter your credentials interactively:
+The CLI uses JWT authentication with API keys. Run `content_foundry auth login` with explicit flags for automation, or without flags for an interactive prompt:
 
 - **Base URL** -- your Content Foundry server (e.g. `http://localhost:3000`)
 - **Client ID** -- your API key client_id
 - **Secret Key** -- your API key secret
 
+```sh
+content_foundry auth login \
+  --base-url "https://contentfoundry.app" \
+  --client-id "your-client-id" \
+  --secret-key "your-secret-key"
+```
+
 Credentials are saved to `~/.config/content_foundry/config.toml`. JWT tokens are cached in `~/.config/content_foundry/token.toml` and auto-refresh on expiry.
+
+## Automation Notes
+
+For agent and CI usage:
+
+- Pass all required flags explicitly to avoid interactive prompts.
+- Use `-f json` for structured output.
+- Use `--auto-confirm` or `--yes` with destructive commands.
+
+```sh
+content_foundry drafts delete 123 --auto-confirm
+content_foundry platforms delete 45 --yes
+content_foundry drafts edit 123 --title "Updated title" --content "Updated body" -f json
+```
 
 ## Commands
 
@@ -77,7 +98,8 @@ content_foundry content-items generate-drafts <id>  # auto-generate for all plat
 content_foundry drafts list [--status pending_review] [--platform-id 1] [--assigned-to 5]
 content_foundry drafts show <id>                    # includes comments + publication
 content_foundry drafts create --title "..." --content "..." --platform-id 1
-content_foundry drafts delete <id>
+content_foundry drafts edit <id> [--title "..."] [--content "..."]
+content_foundry drafts delete <id> [--auto-confirm]
 
 # Review workflow
 content_foundry drafts approve <id>
@@ -116,7 +138,7 @@ content_foundry personas delete <id>
 content_foundry chats list [--persona-id 1]
 content_foundry chats show <id>                     # shows full message history
 content_foundry chats create --prompt "Write a thread about..." [--persona-id 1] [--model "..."]
-content_foundry chats delete <id>
+content_foundry chats delete <id> [--auto-confirm]
 content_foundry chats send <id> --message "Can you make it more casual?"
 ```
 
@@ -129,23 +151,23 @@ content_foundry media show <id>                     # lists all turns
 content_foundry media create --type image --prompt "A sunset over mountains" [--aspect-ratio "16:9"]
 content_foundry media create --type video --prompt "Ocean waves" [--duration 8]
 content_foundry media create --type audio --prompt "Lo-fi beat" [--seconds 30]
-content_foundry media delete <id>
+content_foundry media delete <id> [--auto-confirm]
 
 # Image turns
 content_foundry images show <session_id> <turn_id>  # renders inline if terminal supports it
 content_foundry images create <session_id> --prompt "..."
 content_foundry images convert <session_id> <turn_id>
-content_foundry images delete <session_id> <turn_id>
+content_foundry images delete <session_id> <turn_id> [--auto-confirm]
 
 # Video turns
 content_foundry videos show <session_id> <turn_id>
 content_foundry videos create <session_id> --prompt "..." [--duration 8]
 content_foundry videos extend <session_id> <turn_id> --target-duration 30
-content_foundry videos delete <session_id> <turn_id>
+content_foundry videos delete <session_id> <turn_id> [--auto-confirm]
 
 # Audio turns
 content_foundry audio create <session_id> --prompt "..." [--seconds 30]
-content_foundry audio delete <session_id> <turn_id>
+content_foundry audio delete <session_id> <turn_id> [--auto-confirm]
 ```
 
 ### Supporting Resources
@@ -156,33 +178,35 @@ content_foundry brands list
 content_foundry brands show <id>
 content_foundry brands create --name "My Brand" [--slug "my-brand"]
 content_foundry brands update <id> --name "..." [--voice "..."] [--mission "..."] [--target-audience "..."]
-content_foundry brands delete <id>
+content_foundry brands delete <id> [--auto-confirm]
 content_foundry brands use <id|slug>                # set default brand
 
 # Platforms
 content_foundry platforms list [--active true]
 content_foundry platforms show <id>
 content_foundry platforms create --name "Twitter" --type "Platforms::Twitter"
+content_foundry platforms create --name "Blog" --type "Platforms::Blog"
+content_foundry platforms create --name "News" --type "Platforms::News"
 content_foundry platforms update <id> [--name "..."] [--active false]
-content_foundry platforms delete <id>
+content_foundry platforms delete <id> [--auto-confirm]
 
 # Labels (per platform)
 content_foundry platforms labels list <platform_id>
 content_foundry platforms labels show <platform_id> <label_id>
 content_foundry platforms labels create <platform_id> --name "Politics" [--slug "politics"]
 content_foundry platforms labels update <platform_id> <label_id> --name "..."
-content_foundry platforms labels delete <platform_id> <label_id>
+content_foundry platforms labels delete <platform_id> <label_id> [--auto-confirm]
 
 # Assets
 content_foundry assets list [--type image]
 content_foundry assets upload <file_path>
-content_foundry assets delete <id>
+content_foundry assets delete <id> [--auto-confirm]
 
 # Brand Documents
 content_foundry docs list
 content_foundry docs show <id>
 content_foundry docs create --url "https://..."
-content_foundry docs delete <id>
+content_foundry docs delete <id> [--auto-confirm]
 content_foundry docs index-content
 
 # Activity
@@ -207,14 +231,14 @@ content_foundry account update --name "..."
 content_foundry members list
 content_foundry members show <id>
 content_foundry members update <id> --admin --editor
-content_foundry members delete <id>
+content_foundry members delete <id> [--auto-confirm]
 content_foundry members brand-access <id> --brand-ids 1,2,3
 
 # Invitations
 content_foundry invitations list
 content_foundry invitations show <token>
 content_foundry invitations create --name "Jane" --email "jane@co.com" [--admin] [--brand-ids 1,2]
-content_foundry invitations delete <token>
+content_foundry invitations delete <token> [--auto-confirm]
 ```
 
 ## Global Flags

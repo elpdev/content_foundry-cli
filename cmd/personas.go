@@ -88,6 +88,9 @@ var personasCreateCmd = &cobra.Command{
 		prompt, _ := cmd.Flags().GetString("prompt")
 
 		if name == "" {
+			if !isInteractiveTerminal() {
+				return fmt.Errorf("--name is required")
+			}
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("Persona name").Value(&name),
@@ -188,12 +191,8 @@ var personasDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid persona ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete persona %d?", id)).
-			Description("This cannot be undone.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete persona %d?", id), "This cannot be undone.")
+		if err != nil {
 			return err
 		}
 
@@ -231,4 +230,5 @@ func init() {
 	personasUpdateCmd.Flags().String("model", "", "AI model provider ID (e.g. claude-sonnet-4-5)")
 
 	personasCmd.AddCommand(personasDeleteCmd)
+	addAutoConfirmFlags(personasDeleteCmd)
 }

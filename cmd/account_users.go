@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/huh"
 	"github.com/leo/content-foundry-cli/internal/api"
 	"github.com/leo/content-foundry-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -126,12 +125,8 @@ var membersDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid member ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Remove member %d?", id)).
-			Description("They will lose access to this account.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Remove member %d?", id), "They will lose access to this account.")
+		if err != nil {
 			return err
 		}
 
@@ -198,6 +193,7 @@ func init() {
 	membersUpdateCmd.Flags().Bool("editor", false, "editor role")
 
 	membersCmd.AddCommand(membersDeleteCmd)
+	addAutoConfirmFlags(membersDeleteCmd)
 
 	membersCmd.AddCommand(membersBrandAccessCmd)
 	membersBrandAccessCmd.Flags().String("brand-ids", "", "comma-separated brand IDs")

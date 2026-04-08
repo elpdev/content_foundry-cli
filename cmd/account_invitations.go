@@ -79,6 +79,12 @@ var invitationsCreateCmd = &cobra.Command{
 		email, _ := cmd.Flags().GetString("email")
 
 		if name == "" || email == "" {
+			if !isInteractiveTerminal() {
+				if name == "" {
+					return fmt.Errorf("--name is required")
+				}
+				return fmt.Errorf("--email is required")
+			}
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("Name").Value(&name),
@@ -130,12 +136,8 @@ var invitationsDeleteCmd = &cobra.Command{
 	Short: "Delete an invitation",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title("Delete this invitation?").
-			Description("The invite link will no longer work.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, "Delete this invitation?", "The invite link will no longer work.")
+		if err != nil {
 			return err
 		}
 
@@ -167,4 +169,5 @@ func init() {
 	invitationsCreateCmd.Flags().String("brand-ids", "", "comma-separated brand IDs to grant access to")
 
 	invitationsCmd.AddCommand(invitationsDeleteCmd)
+	addAutoConfirmFlags(invitationsDeleteCmd)
 }

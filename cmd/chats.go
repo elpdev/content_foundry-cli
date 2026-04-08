@@ -108,6 +108,9 @@ var chatsCreateCmd = &cobra.Command{
 		model, _ := cmd.Flags().GetString("model")
 
 		if prompt == "" {
+			if !isInteractiveTerminal() {
+				return fmt.Errorf("--prompt is required")
+			}
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewText().Title("Initial prompt").Value(&prompt),
@@ -151,12 +154,8 @@ var chatsDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid chat ID: %s", args[0])
 		}
 
-		var confirm bool
-		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete chat %d?", id)).
-			Description("This will delete the chat and all messages.").
-			Value(&confirm).
-			Run(); err != nil {
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete chat %d?", id), "This will delete the chat and all messages.")
+		if err != nil {
 			return err
 		}
 
@@ -216,6 +215,7 @@ func init() {
 	chatsCreateCmd.Flags().String("model", "", "model override")
 
 	chatsCmd.AddCommand(chatsDeleteCmd)
+	addAutoConfirmFlags(chatsDeleteCmd)
 
 	chatsCmd.AddCommand(chatsSendCmd)
 	chatsSendCmd.Flags().String("message", "", "message content")

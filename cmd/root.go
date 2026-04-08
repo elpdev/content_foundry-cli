@@ -29,7 +29,7 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "content_foundry",
-	Short: "Content Foundry CLI & TUI",
+	Short: "Content Foundry CLI",
 	Long: lipgloss.NewStyle().Foreground(lipgloss.Color("#ff2d95")).Bold(true).Render("CONTENT FOUNDRY") +
 		lipgloss.NewStyle().Foreground(lipgloss.Color("#6c6c8a")).Render(" -- manage your content pipeline from the terminal"),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {

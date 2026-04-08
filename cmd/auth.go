@@ -25,6 +25,9 @@ var authLoginCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(authCmd)
 	authCmd.AddCommand(authLoginCmd)
+	authLoginCmd.Flags().String("base-url", "", "Content Foundry server URL")
+	authLoginCmd.Flags().String("client-id", "", "API key client_id")
+	authLoginCmd.Flags().String("secret-key", "", "API key secret")
 }
 
 func runAuthLogin(cmd *cobra.Command, args []string) error {
@@ -35,12 +38,18 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 	fmt.Println(titleStyle.Render("CONTENT FOUNDRY") + " -- connect your account")
 	fmt.Println()
 
-	var baseURL, clientID, secretKey string
+	baseURL, _ := cmd.Flags().GetString("base-url")
+	clientID, _ := cmd.Flags().GetString("client-id")
+	secretKey, _ := cmd.Flags().GetString("secret-key")
 
 	existing, _ := config.Load()
 	if existing != nil {
-		baseURL = existing.BaseURL
-		clientID = existing.ClientID
+		if baseURL == "" {
+			baseURL = existing.BaseURL
+		}
+		if clientID == "" {
+			clientID = existing.ClientID
+		}
 	}
 
 	if baseURL == "" {
@@ -49,28 +58,41 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 
 	theme := huh.ThemeCharm()
 
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Title("Base URL").
-				Description("Your Content Foundry server URL").
-				Value(&baseURL),
+	if baseURL == "" || clientID == "" || secretKey == "" {
+		if !isInteractiveTerminal() {
+			switch {
+			case baseURL == "":
+				return fmt.Errorf("--base-url is required")
+			case clientID == "":
+				return fmt.Errorf("--client-id is required")
+			default:
+				return fmt.Errorf("--secret-key is required")
+			}
+		}
 
-			huh.NewInput().
-				Title("Client ID").
-				Description("API key client_id").
-				Value(&clientID),
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().
+					Title("Base URL").
+					Description("Your Content Foundry server URL").
+					Value(&baseURL),
 
-			huh.NewInput().
-				Title("Secret Key").
-				Description("API key secret").
-				EchoMode(huh.EchoModePassword).
-				Value(&secretKey),
-		),
-	).WithTheme(theme)
+				huh.NewInput().
+					Title("Client ID").
+					Description("API key client_id").
+					Value(&clientID),
 
-	if err := form.Run(); err != nil {
-		return err
+				huh.NewInput().
+					Title("Secret Key").
+					Description("API key secret").
+					EchoMode(huh.EchoModePassword).
+					Value(&secretKey),
+			),
+		).WithTheme(theme)
+
+		if err := form.Run(); err != nil {
+			return err
+		}
 	}
 
 	newCfg := &config.Config{

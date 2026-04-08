@@ -156,6 +156,15 @@ var imagesDeleteCmd = &cobra.Command{
 			return fmt.Errorf("invalid turn ID: %s", args[1])
 		}
 
+		confirm, err := confirmDestructiveAction(cmd, fmt.Sprintf("Delete image turn %d?", turnID), "This cannot be undone.")
+		if err != nil {
+			return err
+		}
+		if !confirm {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+
 		client := mustClient()
 		svc := api.NewMediaSessionService(client)
 		if err := svc.DeleteImageTurn(cmdContext(), sessionID, turnID); err != nil {
@@ -177,4 +186,5 @@ func init() {
 
 	imagesCmd.AddCommand(imagesConvertCmd)
 	imagesCmd.AddCommand(imagesDeleteCmd)
+	addAutoConfirmFlags(imagesDeleteCmd)
 }
