@@ -45,8 +45,16 @@ func (s *ContentItemService) List(ctx context.Context, p ContentItemListParams) 
 	return FetchPage[models.ContentItem](ctx, s.client, "/api/v1/content_items", p.Values(), "content_items")
 }
 
-func (s *ContentItemService) Get(ctx context.Context, id int64) (*models.ContentItem, []models.ContentItemDraft, error) {
+func (s *ContentItemService) GetRaw(ctx context.Context, id int64) ([]byte, error) {
 	body, _, err := s.client.Get(ctx, fmt.Sprintf("/api/v1/content_items/%d", id), nil)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+func (s *ContentItemService) Get(ctx context.Context, id int64) (*models.ContentItem, []models.ContentItemDraft, error) {
+	body, err := s.GetRaw(ctx, id)
 	if err != nil {
 		return nil, nil, err
 	}

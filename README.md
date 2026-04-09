@@ -59,6 +59,7 @@ Credentials are saved to `~/.config/content_foundry/config.toml`. JWT tokens are
 content_foundry sources list [--active true]
 content_foundry sources show <id>
 content_foundry sources create --name "Blog RSS" --type "Sources::RssFeed" --config '{"feed_url":"https://..."}'
+content_foundry sources create --name "123 Main St" --type "Sources::ZillowListing" --url "https://www.zillow.com/homedetails/..."
 content_foundry sources update <id> --name "..." [--active false]
 content_foundry sources delete <id>
 content_foundry sources fetch <id>                  # trigger async fetch
