@@ -38,7 +38,7 @@ var draftsListCmd = &cobra.Command{
 			return err
 		}
 
-		headers := []string{"ID", "Content Item", "Platform", "Status", "Version", "Scheduled For"}
+		headers := []string{"ID", "Content Item", "Platform", "Status", "Version", "Media", "Scheduled For"}
 		rows := make([][]string, len(resp.Items))
 		for i, d := range resp.Items {
 			rows[i] = []string{
@@ -47,6 +47,7 @@ var draftsListCmd = &cobra.Command{
 				fmt.Sprintf("%d", d.PlatformID),
 				d.Status,
 				fmt.Sprintf("%d", d.Version),
+				fmt.Sprintf("%d", len(d.Media)),
 				d.ScheduledFor,
 			}
 		}
@@ -89,10 +90,30 @@ var draftsShowCmd = &cobra.Command{
 			{Key: "Scheduled For", Value: d.ScheduledFor},
 			{Key: "Created", Value: d.CreatedAt},
 		}
+		if d.PrimaryMediaURL != "" {
+			fields = append(fields, output.Field{Key: "Primary Media URL", Value: d.PrimaryMediaURL})
+		}
 		if d.AssignedToID != nil {
 			fields = append(fields, output.Field{Key: "Assigned To", Value: fmt.Sprintf("%d", *d.AssignedToID)})
 		}
 		fmt.Print(formatter.FormatItem(fields))
+
+		if len(d.Media) > 0 {
+			fmt.Println()
+			fmt.Println("Media:")
+			headers := []string{"ID", "Type", "Position", "Status", "URL"}
+			rows := make([][]string, len(d.Media))
+			for i, media := range d.Media {
+				rows[i] = []string{
+					fmt.Sprintf("%d", media.ID),
+					media.Type,
+					fmt.Sprintf("%d", media.Position),
+					media.Status,
+					draftMediaURL(media),
+				}
+			}
+			fmt.Print(formatter.FormatList(headers, rows, nil))
+		}
 
 		if len(detail.Comments) > 0 {
 			fmt.Println()
@@ -559,6 +580,19 @@ func parseIntList(s string) ([]int64, error) {
 		ids = append(ids, id)
 	}
 	return ids, nil
+}
+
+func draftMediaURL(media models.DraftMedia) string {
+	if media.URL != "" {
+		return media.URL
+	}
+	if media.ImageURL != "" {
+		return media.ImageURL
+	}
+	if media.JPGURL != "" {
+		return media.JPGURL
+	}
+	return media.WebPURL
 }
 
 func init() {
