@@ -25,22 +25,33 @@ var contentItemsListCmd = &cobra.Command{
 
 		status, _ := cmd.Flags().GetString("status")
 		search, _ := cmd.Flags().GetString("search")
+		sourceType, _ := cmd.Flags().GetString("source-type")
 		page, _ := cmd.Flags().GetInt("page")
 		perPage, _ := cmd.Flags().GetInt("per-page")
 
 		resp, err := svc.List(cmdContext(), api.ContentItemListParams{
-			Status: status, Search: search, Page: page, PerPage: perPage,
+			Status: status, Search: search, SourceType: sourceType, Page: page, PerPage: perPage,
 		})
 		if err != nil {
 			return err
 		}
 
 		headers := []string{"ID", "Title", "Status", "Source ID", "Images", "Fetched At"}
+		if sourceType == "inbound_email" {
+			headers = []string{"ID", "Title", "Status", "Source ID", "From", "Received At", "Attachments", "Images", "Fetched At"}
+		}
 		rows := make([][]string, len(resp.Items))
 		for i, item := range resp.Items {
 			title := item.Title
 			if outFormat == "table" {
 				title = truncate(title, 60)
+			}
+			if sourceType == "inbound_email" {
+				rows[i] = []string{
+					fmt.Sprintf("%d", item.ID), title, item.Status,
+					fmt.Sprintf("%d", item.SourceID), contentItemEmailFrom(&item), contentItemEmailReceivedAt(&item), contentItemEmailAttachmentCount(&item), contentItemImageSummary(&item), item.FetchedAt,
+				}
+				continue
 			}
 			rows[i] = []string{
 				fmt.Sprintf("%d", item.ID), title, item.Status,
@@ -90,6 +101,15 @@ var contentItemsShowCmd = &cobra.Command{
 		}
 		if item.HeroImageURL != "" {
 			fields = append(fields, output.Field{Key: "Hero Image", Value: item.HeroImageURL})
+		}
+		if from := contentItemEmailFrom(item); from != "" {
+			fields = append(fields, output.Field{Key: "From", Value: from})
+		}
+		if receivedAt := contentItemEmailReceivedAt(item); receivedAt != "" {
+			fields = append(fields, output.Field{Key: "Received At", Value: receivedAt})
+		}
+		if attachmentCount, ok := contentItemEmailAttachmentCountIfPresent(item); ok {
+			fields = append(fields, output.Field{Key: "Attachment Count", Value: attachmentCount})
 		}
 		if len(item.Assets) > 0 {
 			fields = append(fields, output.Field{Key: "Linked Assets", Value: fmt.Sprintf("%d", len(item.Assets))})
@@ -145,6 +165,61 @@ func contentItemImageSummary(item *models.ContentItem) string {
 	return "0"
 }
 
+func contentItemEmailFrom(item *models.ContentItem) string {
+	return contentItemMetadataString(item, "from")
+}
+
+func contentItemEmailReceivedAt(item *models.ContentItem) string {
+	return contentItemMetadataString(item, "received_at")
+}
+
+func contentItemEmailAttachmentCount(item *models.ContentItem) string {
+	if count, ok := contentItemEmailAttachmentCountIfPresent(item); ok {
+		return count
+	}
+	return "0"
+}
+
+func contentItemEmailAttachmentCountIfPresent(item *models.ContentItem) (string, bool) {
+	if item == nil || item.Metadata == nil {
+		return "", false
+	}
+	v, ok := item.Metadata["attachment_count"]
+	if !ok || v == nil {
+		return "", false
+	}
+	switch n := v.(type) {
+	case string:
+		return n, true
+	case float64:
+		return strconv.FormatInt(int64(n), 10), true
+	case float32:
+		return strconv.FormatInt(int64(n), 10), true
+	case int:
+		return strconv.Itoa(n), true
+	case int64:
+		return strconv.FormatInt(n, 10), true
+	case int32:
+		return strconv.FormatInt(int64(n), 10), true
+	default:
+		return fmt.Sprintf("%v", v), true
+	}
+}
+
+func contentItemMetadataString(item *models.ContentItem, key string) string {
+	if item == nil || item.Metadata == nil {
+		return ""
+	}
+	v, ok := item.Metadata[key]
+	if !ok || v == nil {
+		return ""
+	}
+	if s, ok := v.(string); ok {
+		return s
+	}
+	return fmt.Sprintf("%v", v)
+}
+
 var contentItemsProcessCmd = &cobra.Command{
 	Use:   "process <id>",
 	Short: "Process a content item (async)",
@@ -195,6 +270,7 @@ func init() {
 	contentItemsCmd.AddCommand(contentItemsListCmd)
 	contentItemsListCmd.Flags().String("status", "", "filter by status (pending, processed, ...)")
 	contentItemsListCmd.Flags().String("search", "", "search title or source URL")
+	contentItemsListCmd.Flags().String("source-type", "", "filter by source type (e.g. inbound_email)")
 	var page, perPage int
 	addPaginationFlags(contentItemsListCmd, &page, &perPage)
 

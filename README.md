@@ -65,7 +65,7 @@ content_foundry sources delete <id>
 content_foundry sources fetch <id>                  # trigger async fetch
 
 # Content Items -- ingested content
-content_foundry content-items list [--status pending]
+content_foundry content-items list [--status pending] [--source-type inbound_email]
 content_foundry content-items show <id>             # includes associated drafts
 content_foundry content-items process <id> [--guidance "..."]
 content_foundry content-items generate-drafts <id>  # auto-generate for all platforms
