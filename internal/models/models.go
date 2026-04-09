@@ -30,6 +30,16 @@ type BrandDetail struct {
 	UpdatedAt        string `json:"updated_at"`
 }
 
+// Campaign represents a campaign.
+type Campaign struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
 // Label represents a platform label.
 type Label struct {
 	ID          int64   `json:"id"`
