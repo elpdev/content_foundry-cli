@@ -163,7 +163,17 @@ func (s *DraftService) Unassign(ctx context.Context, id int64) (*models.Draft, e
 }
 
 func (s *DraftService) SaveMedia(ctx context.Context, id int64, turnIDs []int64) (*models.Draft, error) {
-	return s.workflowAction(ctx, id, "save_media", map[string]any{"media_turn_ids": turnIDs})
+	body, _, err := s.client.Patch(ctx, fmt.Sprintf("/api/v1/drafts/%d/save_media", id), map[string]any{"media_turn_ids": turnIDs})
+	if err != nil {
+		return nil, err
+	}
+	var wrapper struct {
+		Draft models.Draft `json:"draft"`
+	}
+	if err := json.Unmarshal(body, &wrapper); err != nil {
+		return nil, fmt.Errorf("parsing draft: %w", err)
+	}
+	return &wrapper.Draft, nil
 }
 
 func (s *DraftService) workflowAction(ctx context.Context, id int64, action string, payload map[string]any) (*models.Draft, error) {

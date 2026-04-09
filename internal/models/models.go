@@ -121,21 +121,34 @@ func (p *Platform) ModelDisplayName() string {
 }
 
 // Draft represents a content draft.
+type DraftMedia struct {
+	ID       int64  `json:"id"`
+	Type     string `json:"type"`
+	Position int    `json:"position"`
+	Status   string `json:"status"`
+	URL      string `json:"url"`
+	ImageURL string `json:"image_url"`
+	JPGURL   string `json:"jpg_url"`
+	WebPURL  string `json:"webp_url"`
+}
+
 type Draft struct {
-	ID            int64  `json:"id"`
-	ContentItemID int64  `json:"content_item_id"`
-	PlatformID    int64  `json:"platform_id"`
-	Content       string `json:"content"`
-	Version       int    `json:"version"`
-	Status        string `json:"status"`
-	ReviewedByID  *int64 `json:"reviewed_by_id"`
-	ReviewedAt    string `json:"reviewed_at"`
-	ScheduledFor  string `json:"scheduled_for"`
-	ScheduledByID *int64 `json:"scheduled_by_id"`
-	AssignedToID  *int64 `json:"assigned_to_id"`
-	AssignedAt    string `json:"assigned_at"`
-	CreatedAt     string `json:"created_at"`
-	UpdatedAt     string `json:"updated_at"`
+	ID              int64        `json:"id"`
+	ContentItemID   int64        `json:"content_item_id"`
+	PlatformID      int64        `json:"platform_id"`
+	Content         string       `json:"content"`
+	Version         int          `json:"version"`
+	Status          string       `json:"status"`
+	ReviewedByID    *int64       `json:"reviewed_by_id"`
+	ReviewedAt      string       `json:"reviewed_at"`
+	ScheduledFor    string       `json:"scheduled_for"`
+	ScheduledByID   *int64       `json:"scheduled_by_id"`
+	AssignedToID    *int64       `json:"assigned_to_id"`
+	AssignedAt      string       `json:"assigned_at"`
+	PrimaryMediaURL string       `json:"primary_media_url"`
+	Media           []DraftMedia `json:"media"`
+	CreatedAt       string       `json:"created_at"`
+	UpdatedAt       string       `json:"updated_at"`
 }
 
 // DraftComment represents a comment on a draft.
