@@ -44,7 +44,7 @@ var contentItemsListCmd = &cobra.Command{
 			}
 			rows[i] = []string{
 				fmt.Sprintf("%d", item.ID), title, item.Status,
-				fmt.Sprintf("%d", item.SourceID), contentItemImageSummary(item), item.FetchedAt,
+				fmt.Sprintf("%d", item.SourceID), contentItemImageSummary(&item), item.FetchedAt,
 			}
 		}
 
@@ -135,7 +135,7 @@ var contentItemsShowCmd = &cobra.Command{
 	},
 }
 
-func contentItemImageSummary(item models.ContentItem) string {
+func contentItemImageSummary(item *models.ContentItem) string {
 	if len(item.Assets) > 0 {
 		return fmt.Sprintf("%d", len(item.Assets))
 	}
