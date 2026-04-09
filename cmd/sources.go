@@ -60,6 +60,15 @@ var sourcesShowCmd = &cobra.Command{
 
 		client := mustClient()
 		svc := api.NewSourceService(client)
+		if outFormat == "json" {
+			raw, err := svc.GetRaw(cmdContext(), id)
+			if err != nil {
+				return err
+			}
+			fmt.Print(formatter.FormatRaw(raw))
+			return nil
+		}
+
 		source, err := svc.Get(cmdContext(), id)
 		if err != nil {
 			return err
@@ -92,14 +101,16 @@ var sourcesCreateCmd = &cobra.Command{
 		name, _ := cmd.Flags().GetString("name")
 		sourceType, _ := cmd.Flags().GetString("type")
 		configStr, _ := cmd.Flags().GetString("config")
+		urlStr, _ := cmd.Flags().GetString("url")
 		prompt, _ := cmd.Flags().GetString("prompt")
 
-		if name == "" {
+		if name == "" || sourceType == "" || (configStr == "" && urlStr == "") {
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("Source name").Value(&name),
-					huh.NewInput().Title("Type (e.g. Sources::RssFeed)").Value(&sourceType),
-					huh.NewInput().Title("Config JSON").Value(&configStr),
+					huh.NewInput().Title("Type (e.g. Sources::RssFeed or Sources::ZillowListing)").Value(&sourceType),
+					huh.NewInput().Title("Config JSON").Description("Optional when using --url for Zillow sources").Value(&configStr),
+					huh.NewInput().Title("Zillow URL").Description("Used to build {\"url\": \"...\"} when config JSON is omitted").Value(&urlStr),
 				),
 			).WithTheme(huh.ThemeCharm())
 			if err := form.Run(); err != nil {
@@ -112,6 +123,12 @@ var sourcesCreateCmd = &cobra.Command{
 			if err := json.Unmarshal([]byte(configStr), &cfg); err != nil {
 				return fmt.Errorf("invalid config JSON: %w", err)
 			}
+		}
+		if urlStr != "" {
+			if cfg == nil {
+				cfg = map[string]any{}
+			}
+			cfg["url"] = urlStr
 		}
 
 		client := mustClient()
@@ -243,8 +260,9 @@ func init() {
 
 	sourcesCmd.AddCommand(sourcesCreateCmd)
 	sourcesCreateCmd.Flags().String("name", "", "source name")
-	sourcesCreateCmd.Flags().String("type", "", "source type (e.g. Sources::RssFeed)")
+	sourcesCreateCmd.Flags().String("type", "", "source type (e.g. Sources::RssFeed or Sources::ZillowListing)")
 	sourcesCreateCmd.Flags().String("config", "", "source config as JSON")
+	sourcesCreateCmd.Flags().String("url", "", "convenience source URL; for Zillow this builds config {\"url\": \"...\"}")
 	sourcesCreateCmd.Flags().String("prompt", "", "processing prompt")
 
 	sourcesCmd.AddCommand(sourcesUpdateCmd)

@@ -41,8 +41,16 @@ func (s *SourceService) List(ctx context.Context, p SourceListParams) (*Paginate
 	return FetchPage[models.Source](ctx, s.client, "/api/v1/sources", p.Values(), "sources")
 }
 
-func (s *SourceService) Get(ctx context.Context, id int64) (*models.Source, error) {
+func (s *SourceService) GetRaw(ctx context.Context, id int64) ([]byte, error) {
 	body, _, err := s.client.Get(ctx, fmt.Sprintf("/api/v1/sources/%d", id), nil)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+func (s *SourceService) Get(ctx context.Context, id int64) (*models.Source, error) {
+	body, err := s.GetRaw(ctx, id)
 	if err != nil {
 		return nil, err
 	}

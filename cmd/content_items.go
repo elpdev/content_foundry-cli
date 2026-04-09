@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/leo/content-foundry-cli/internal/api"
+	"github.com/leo/content-foundry-cli/internal/models"
 	"github.com/leo/content-foundry-cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +35,7 @@ var contentItemsListCmd = &cobra.Command{
 			return err
 		}
 
-		headers := []string{"ID", "Title", "Status", "Source ID", "Fetched At"}
+		headers := []string{"ID", "Title", "Status", "Source ID", "Images", "Fetched At"}
 		rows := make([][]string, len(resp.Items))
 		for i, item := range resp.Items {
 			title := item.Title
@@ -43,7 +44,7 @@ var contentItemsListCmd = &cobra.Command{
 			}
 			rows[i] = []string{
 				fmt.Sprintf("%d", item.ID), title, item.Status,
-				fmt.Sprintf("%d", item.SourceID), item.FetchedAt,
+				fmt.Sprintf("%d", item.SourceID), contentItemImageSummary(item), item.FetchedAt,
 			}
 		}
 
@@ -64,6 +65,15 @@ var contentItemsShowCmd = &cobra.Command{
 
 		client := mustClient()
 		svc := api.NewContentItemService(client)
+		if outFormat == "json" {
+			raw, err := svc.GetRaw(cmdContext(), id)
+			if err != nil {
+				return err
+			}
+			fmt.Print(formatter.FormatRaw(raw))
+			return nil
+		}
+
 		item, drafts, err := svc.Get(cmdContext(), id)
 		if err != nil {
 			return err
@@ -78,7 +88,32 @@ var contentItemsShowCmd = &cobra.Command{
 			{Key: "Fetched At", Value: item.FetchedAt},
 			{Key: "Created", Value: item.CreatedAt},
 		}
+		if item.HeroImageURL != "" {
+			fields = append(fields, output.Field{Key: "Hero Image", Value: item.HeroImageURL})
+		}
+		if len(item.Assets) > 0 {
+			fields = append(fields, output.Field{Key: "Linked Assets", Value: fmt.Sprintf("%d", len(item.Assets))})
+		}
 		fmt.Print(formatter.FormatItem(fields))
+
+		if len(item.Assets) > 0 {
+			fmt.Println()
+			headers := []string{"ID", "Filename", "Content Type", "URL"}
+			rows := make([][]string, len(item.Assets))
+			for i, asset := range item.Assets {
+				url := asset.FileURL
+				if outFormat == "table" {
+					url = truncate(url, 80)
+				}
+				rows[i] = []string{
+					fmt.Sprintf("%d", asset.ID),
+					asset.Filename,
+					asset.ContentType,
+					url,
+				}
+			}
+			fmt.Print(formatter.FormatList(headers, rows, nil))
+		}
 
 		if len(drafts) > 0 {
 			fmt.Println()
@@ -98,6 +133,16 @@ var contentItemsShowCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func contentItemImageSummary(item models.ContentItem) string {
+	if len(item.Assets) > 0 {
+		return fmt.Sprintf("%d", len(item.Assets))
+	}
+	if item.HeroImageURL != "" {
+		return "1"
+	}
+	return "0"
 }
 
 var contentItemsProcessCmd = &cobra.Command{
