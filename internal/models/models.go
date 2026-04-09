@@ -65,6 +65,7 @@ type ContentItem struct {
 	HeroImageURL string  `json:"hero_image_url"`
 	Assets       []Asset `json:"assets"`
 	ContentHash  string  `json:"content_hash"`
+	Metadata     map[string]any `json:"metadata"`
 	FetchedAt    string  `json:"fetched_at"`
 	CreatedAt    string  `json:"created_at"`
 	UpdatedAt    string  `json:"updated_at"`
