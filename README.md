@@ -154,10 +154,10 @@ content_foundry audio delete <session_id> <turn_id>
 ```sh
 # Brands
 content_foundry brands list
-content_foundry brands show <id>
+content_foundry brands show <id|slug>
 content_foundry brands create --name "My Brand" [--slug "my-brand"]
-content_foundry brands update <id> --name "..." [--voice "..."] [--mission "..."] [--target-audience "..."]
-content_foundry brands delete <id>
+content_foundry brands update <id|slug> --name "..." [--voice "..."] [--mission "..."] [--target-audience "..."]
+content_foundry brands delete <id|slug>
 content_foundry brands use <id|slug>                # set default brand
 
 # Platforms

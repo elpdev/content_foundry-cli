@@ -106,7 +106,7 @@ func runAuthLogin(cmd *cobra.Command, args []string) error {
 			brands.Items[0].Slug,
 		)
 	} else if len(brands.Items) > 1 {
-		fmt.Printf("  Run 'content_foundry brands use <id>' to set your default brand.\n")
+		fmt.Printf("  Run 'content_foundry brands use <id|slug>' to set your default brand.\n")
 	}
 
 	if err := newCfg.Save(); err != nil {
