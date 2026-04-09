@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/leo/content-foundry-cli/internal/api"
@@ -90,12 +91,20 @@ func mustClient() *api.Client {
 
 	// Override brand if --brand flag is set
 	if brandFlag != "" {
-		// Try as numeric ID first
-		var id int64
-		if _, err := fmt.Sscanf(brandFlag, "%d", &id); err == nil {
+		if id, err := strconv.ParseInt(brandFlag, 10, 64); err == nil {
 			apiClient.BrandID = id
+		} else {
+			resolverClient := api.NewClient(c)
+			resolverClient.BrandID = 0
+			brand, err := api.NewBrandService(resolverClient).GetByRef(cmdContext(), brandFlag)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, lipgloss.NewStyle().Foreground(lipgloss.Color("#ff4444")).Render(
+					"Error resolving brand override: "+err.Error(),
+				))
+				os.Exit(1)
+			}
+			apiClient.BrandID = brand.ID
 		}
-		// If non-numeric, it's a slug -- will need to resolve via API later
 	}
 
 	return apiClient

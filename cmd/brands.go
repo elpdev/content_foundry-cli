@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -51,18 +50,13 @@ var brandsListCmd = &cobra.Command{
 }
 
 var brandsShowCmd = &cobra.Command{
-	Use:   "show <id>",
+	Use:   "show <id|slug>",
 	Short: "Show brand details",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		id, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return fmt.Errorf("invalid brand ID: %s", args[0])
-		}
-
 		client := mustClient()
 		svc := api.NewBrandService(client)
-		brand, err := svc.Get(cmdContext(), id)
+		brand, err := svc.GetByRef(cmdContext(), args[0])
 		if err != nil {
 			return err
 		}
@@ -128,15 +122,10 @@ var brandsCreateCmd = &cobra.Command{
 }
 
 var brandsUpdateCmd = &cobra.Command{
-	Use:   "update <id>",
+	Use:   "update <id|slug>",
 	Short: "Update a brand",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		id, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return fmt.Errorf("invalid brand ID: %s", args[0])
-		}
-
 		flagMap := map[string]string{
 			"name":            "name",
 			"slug":            "slug",
@@ -167,7 +156,7 @@ var brandsUpdateCmd = &cobra.Command{
 
 		client := mustClient()
 		svc := api.NewBrandService(client)
-		brand, err := svc.Update(cmdContext(), id, fields)
+		brand, err := svc.UpdateByRef(cmdContext(), args[0], fields)
 		if err != nil {
 			return err
 		}
@@ -191,18 +180,13 @@ var brandsUpdateCmd = &cobra.Command{
 }
 
 var brandsDeleteCmd = &cobra.Command{
-	Use:   "delete <id>",
+	Use:   "delete <id|slug>",
 	Short: "Delete a brand",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		id, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return fmt.Errorf("invalid brand ID: %s", args[0])
-		}
-
 		var confirm bool
 		if err := huh.NewConfirm().
-			Title(fmt.Sprintf("Delete brand %d?", id)).
+			Title(fmt.Sprintf("Delete brand %s?", args[0])).
 			Description("This cannot be undone.").
 			Value(&confirm).
 			Run(); err != nil {
@@ -216,7 +200,7 @@ var brandsDeleteCmd = &cobra.Command{
 
 		client := mustClient()
 		svc := api.NewBrandService(client)
-		if err := svc.Delete(cmdContext(), id); err != nil {
+		if err := svc.DeleteByRef(cmdContext(), args[0]); err != nil {
 			return err
 		}
 		fmt.Println("Brand deleted.")
@@ -230,55 +214,25 @@ var brandsUseCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c := mustLoadConfig()
-
-		// Try as numeric ID
-		if id, err := strconv.ParseInt(args[0], 10, 64); err == nil {
-			client := mustClient()
-			svc := api.NewBrandService(client)
-			brand, err := svc.Get(cmdContext(), id)
-			if err != nil {
-				return err
-			}
-			c.DefaultBrandID = brand.ID
-			c.DefaultBrandSlug = brand.Slug
-
-			if err := c.Save(); err != nil {
-				return fmt.Errorf("saving config: %w", err)
-			}
-
-			fmt.Printf("Default brand set to %s (%s)\n",
-				lipgloss.NewStyle().Foreground(lipgloss.Color("#00fff2")).Bold(true).Render(brand.Name),
-				brand.Slug,
-			)
-			return nil
-		}
-
-		// Treat as slug -- list brands and find matching slug
 		client := mustClient()
 		svc := api.NewBrandService(client)
-		resp, err := svc.List(cmdContext(), api.BrandListParams{Page: 1, PerPage: 100})
+		brand, err := svc.GetByRef(cmdContext(), args[0])
 		if err != nil {
 			return err
 		}
 
-		for _, b := range resp.Items {
-			if b.Slug == args[0] {
-				c.DefaultBrandID = b.ID
-				c.DefaultBrandSlug = b.Slug
+		c.DefaultBrandID = brand.ID
+		c.DefaultBrandSlug = brand.Slug
 
-				if err := c.Save(); err != nil {
-					return fmt.Errorf("saving config: %w", err)
-				}
-
-				fmt.Printf("Default brand set to %s (%s)\n",
-					lipgloss.NewStyle().Foreground(lipgloss.Color("#00fff2")).Bold(true).Render(b.Name),
-					b.Slug,
-				)
-				return nil
-			}
+		if err := c.Save(); err != nil {
+			return fmt.Errorf("saving config: %w", err)
 		}
 
-		return fmt.Errorf("brand not found: %s", args[0])
+		fmt.Printf("Default brand set to %s (%s)\n",
+			lipgloss.NewStyle().Foreground(lipgloss.Color("#00fff2")).Bold(true).Render(brand.Name),
+			brand.Slug,
+		)
+		return nil
 	},
 }
 

@@ -37,8 +37,12 @@ func (s *BrandService) List(ctx context.Context, p BrandListParams) (*PaginatedR
 	return FetchPage[models.Brand](ctx, s.client, "/api/v1/brands", p.Values(), "brands")
 }
 
-func (s *BrandService) Get(ctx context.Context, id int64) (*models.BrandDetail, error) {
-	body, _, err := s.client.Get(ctx, fmt.Sprintf("/api/v1/brands/%d", id), nil)
+func brandRefPath(ref string) string {
+	return "/api/v1/brands/" + url.PathEscape(ref)
+}
+
+func (s *BrandService) GetByRef(ctx context.Context, ref string) (*models.BrandDetail, error) {
+	body, _, err := s.client.Get(ctx, brandRefPath(ref), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49,6 +53,10 @@ func (s *BrandService) Get(ctx context.Context, id int64) (*models.BrandDetail, 
 		return nil, fmt.Errorf("parsing brand: %w", err)
 	}
 	return &wrapper.Brand, nil
+}
+
+func (s *BrandService) Get(ctx context.Context, id int64) (*models.BrandDetail, error) {
+	return s.GetByRef(ctx, fmt.Sprintf("%d", id))
 }
 
 func (s *BrandService) Create(ctx context.Context, name, slug, description string) (*models.Brand, error) {
@@ -75,9 +83,9 @@ func (s *BrandService) Create(ctx context.Context, name, slug, description strin
 	return &wrapper.Brand, nil
 }
 
-func (s *BrandService) Update(ctx context.Context, id int64, fields map[string]any) (*models.BrandDetail, error) {
+func (s *BrandService) UpdateByRef(ctx context.Context, ref string, fields map[string]any) (*models.BrandDetail, error) {
 	payload := map[string]any{"brand": fields}
-	body, _, err := s.client.Patch(ctx, fmt.Sprintf("/api/v1/brands/%d", id), payload)
+	body, _, err := s.client.Patch(ctx, brandRefPath(ref), payload)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +98,15 @@ func (s *BrandService) Update(ctx context.Context, id int64, fields map[string]a
 	return &wrapper.Brand, nil
 }
 
-func (s *BrandService) Delete(ctx context.Context, id int64) error {
-	_, err := s.client.Delete(ctx, fmt.Sprintf("/api/v1/brands/%d", id))
+func (s *BrandService) Update(ctx context.Context, id int64, fields map[string]any) (*models.BrandDetail, error) {
+	return s.UpdateByRef(ctx, fmt.Sprintf("%d", id), fields)
+}
+
+func (s *BrandService) DeleteByRef(ctx context.Context, ref string) error {
+	_, err := s.client.Delete(ctx, brandRefPath(ref))
 	return err
+}
+
+func (s *BrandService) Delete(ctx context.Context, id int64) error {
+	return s.DeleteByRef(ctx, fmt.Sprintf("%d", id))
 }
