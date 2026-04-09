@@ -53,3 +53,5 @@ brews:
     description: "Content Foundry CLI - manage your content pipeline from the terminal"
     test: |
       assert_match "CONTENT FOUNDRY", shell_output("#{bin}/content_foundry --help")
+    install: |
+      bin.install "content_foundry"
