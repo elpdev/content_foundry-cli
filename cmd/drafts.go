@@ -109,7 +109,7 @@ var draftsShowCmd = &cobra.Command{
 					media.Type,
 					fmt.Sprintf("%d", media.Position),
 					media.Status,
-					draftMediaURL(media),
+					draftMediaURL(&media),
 				}
 			}
 			fmt.Print(formatter.FormatList(headers, rows, nil))
@@ -582,7 +582,10 @@ func parseIntList(s string) ([]int64, error) {
 	return ids, nil
 }
 
-func draftMediaURL(media models.DraftMedia) string {
+func draftMediaURL(media *models.DraftMedia) string {
+	if media == nil {
+		return ""
+	}
 	if media.URL != "" {
 		return media.URL
 	}
