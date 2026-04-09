@@ -57,18 +57,18 @@ type Source struct {
 
 // ContentItem represents a content item.
 type ContentItem struct {
-	ID           int64   `json:"id"`
-	Title        string  `json:"title"`
-	SourceID     int64   `json:"source_id"`
-	SourceURL    string  `json:"source_url"`
-	Status       string  `json:"status"`
-	HeroImageURL string  `json:"hero_image_url"`
-	Assets       []Asset `json:"assets"`
-	ContentHash  string  `json:"content_hash"`
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	SourceID     int64          `json:"source_id"`
+	SourceURL    string         `json:"source_url"`
+	Status       string         `json:"status"`
+	HeroImageURL string         `json:"hero_image_url"`
+	Assets       []Asset        `json:"assets"`
+	ContentHash  string         `json:"content_hash"`
 	Metadata     map[string]any `json:"metadata"`
-	FetchedAt    string  `json:"fetched_at"`
-	CreatedAt    string  `json:"created_at"`
-	UpdatedAt    string  `json:"updated_at"`
+	FetchedAt    string         `json:"fetched_at"`
+	CreatedAt    string         `json:"created_at"`
+	UpdatedAt    string         `json:"updated_at"`
 }
 
 // ContentItemDraft is a minimal draft reference shown in content item detail.
