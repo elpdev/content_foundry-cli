@@ -227,16 +227,12 @@ func captureStdout(t *testing.T, fn func()) string {
 		os.Stdout = oldStdout
 	}()
 
-	outputCh := make(chan string, 1)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, r)
-		outputCh <- buf.String()
-	}()
-
 	fn()
 	_ = w.Close()
+
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, r)
 	_ = r.Close()
 
-	return <-outputCh
+	return buf.String()
 }
