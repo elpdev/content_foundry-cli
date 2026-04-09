@@ -167,6 +167,13 @@ content_foundry platforms create --name "Twitter" --type "Platforms::Twitter"
 content_foundry platforms update <id> [--name "..."] [--active false]
 content_foundry platforms delete <id>
 
+# Campaigns
+content_foundry campaigns list
+content_foundry campaigns show <id>
+content_foundry campaigns create --name "Launch Q2" --slug "launch-q2" [--description "..."]
+content_foundry campaigns update <id> [--name "..."] [--slug "..."] [--description "..."]
+content_foundry campaigns delete <id>
+
 # Labels (per platform)
 content_foundry platforms labels list <platform_id>
 content_foundry platforms labels show <platform_id> <label_id>
